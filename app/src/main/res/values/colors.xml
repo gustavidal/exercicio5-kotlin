@@ -7,4 +7,19 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Cores principais -->
+    <color name="azul_marinho">#FF172B4D</color>
+    <color name="dourado">#FFD4AF37</color>
+    <color name="branco_gelo">#FFF8F9FC</color>
+    <color name="coral">#FFF45B40</color>
+
+    <!-- Cores de feedback -->
+    <color name="verde_correto">#FF27864A</color>
+    <color name="vermelho_incorreto">#FFD93636</color>
+
+    <!-- Cores complementares -->
+    <color name="branco">#FFFFFFFF</color>
+    <color name="texto_secundario">#FFDCE5F3</color>
+    <color name="cinza_texto">#FF667085</color>
 </resources>
