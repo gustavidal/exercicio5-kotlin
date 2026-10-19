@@ -4,34 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusTarget
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.quizmvvm.screens.inicio.InicioScreen
+import com.example.quizmvvm.screens.inicio.InicioScreenViewModel
+import com.example.quizmvvm.screens.quiz.QuizScreen
+import com.example.quizmvvm.screens.quiz.QuizScreenViewModel
+import com.example.quizmvvm.screens.resultado.ResultadoScreen
 import com.example.quizmvvm.ui.theme.QuizMVVMTheme
 
 class MainActivity : ComponentActivity() {
@@ -41,75 +29,80 @@ class MainActivity : ComponentActivity() {
         setContent {
             QuizMVVMTheme {
                 Scaffold( modifier = Modifier.fillMaxSize() ) { innerPadding ->
-                    MainScreen(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                    )
+                    val navController = rememberNavController()
+
+                    NavHost(
+                        navController = navController,
+                        startDestination = "inicio",
+                        exitTransition = {
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(100)
+                            )
+                        },
+                        enterTransition = {
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(100)
+                            )
+                        }
+                    ) {
+                        composable (route = "inicio") {
+                            InicioScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                navController = navController,
+                                inicioScreenViewModel = InicioScreenViewModel()
+                            )
+                        }
+
+                        composable (
+                            route = "quiz/{nome}",
+                            arguments = listOf(
+                                navArgument(name = "nome") {
+                                    type = NavType.StringType
+                                }
+                            )
+                        ) {
+                            val nome = it.arguments?.getString("nome")
+
+                            QuizScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                navController = navController,
+                                quizScreenViewModel = QuizScreenViewModel(),
+                                nome = nome!!
+                            )
+                        }
+
+                        composable (
+                            route = "resultado/{nome}/{pontuacao}/{qtdePerguntas}",
+                            arguments = listOf(
+                                navArgument(name = "nome") {
+                                    type = NavType.StringType
+                                },
+                                navArgument(name = "pontuacao") {
+                                    type = NavType.IntType
+                                },
+                                navArgument(name = "qtdePerguntas") {
+                                    type = NavType.IntType
+                                }
+                            )
+                        ) {
+                            val nome = it.arguments?.getString("nome")
+                            val pontuacao = it.arguments?.getInt("pontuacao")
+                            val qtdePerguntas = it.arguments?.getInt("qtdePerguntas")
+
+                            ResultadoScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                navController = navController,
+                                nome = nome!!,
+                                pontuacao = pontuacao!!,
+                                totalPerguntas = qtdePerguntas!!
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-@Composable
-fun MainScreen(
-    modifier: Modifier = Modifier
-) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(colorResource(R.color.azul_marinho))
-            .focusTarget()
-            .pointerInput(Unit) {
-                detectTapGestures( onTap = {
-                    focusManager.clearFocus(force = true)
-                    keyboardController?.hide()
-                })
-            },
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-//        -- header
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            Image(
-                painter = painterResource(R.drawable.bible_icon),
-                contentDescription = "Logo App",
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .size(90.dp)
-            )
-            Text(
-                text = "Quiz Litúrgico",
-                fontSize = 24.sp,
-                color = colorResource(R.color.branco),
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-//        -- button
-        Button(
-            onClick = {},
-            shape = RoundedCornerShape(32.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 15.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorResource(R.color.coral),
-                contentColor = colorResource(R.color.branco)
-            )
-        ) {
-            Text(
-                text = "COMEÇAR",
-                fontSize = 18.sp
-            )
-        }
-    }
-}
